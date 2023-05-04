@@ -1,0 +1,120 @@
+package tictactoe
+const val DOTTEDLINE = "---------"
+const val EMPTYGRID = """
+---------
+|       |
+|       |
+|       |
+---------
+"""
+
+fun main() {
+    println(EMPTYGRID)
+    var split3Input = mutableListOf<String>("___", "___", "___")
+    var moveSpots: List<Int>
+    var turnCounts = 0
+    do {
+        // 2. Keep asking for next move
+        do {
+            moveSpots = makeMove(split3Input)    // 4. Keep asking for the next move until it's correct
+        } while (moveSpots[0]==99 && moveSpots[1]==99) // 3. As long as the move is invalid
+        turnCounts += 1
+        if(turnCounts % 2 != 0) {
+            split3Input[moveSpots[0]-1] = split3Input[moveSpots[0]-1].substring(0, moveSpots[1]-1) + "X" + split3Input[moveSpots[0]-1].substring(moveSpots[1])
+        } else {
+            split3Input[moveSpots[0]-1] = split3Input[moveSpots[0]-1].substring(0, moveSpots[1]-1) + "O" + split3Input[moveSpots[0]-1].substring(moveSpots[1])
+        }
+        drawGame(split3Input)
+    } while (checkForWins(split3Input) == false) // 1. As long as no one wins yet
+
+
+}
+
+
+// Draw the current game setup
+fun drawGame(split3Input: MutableList<String>) {
+    println(DOTTEDLINE)
+    for(i in 0..split3Input.size-1) {
+        print("| ")
+        for(j in 0..2) {
+            print("${split3Input[i].get(j)} ")
+        }
+        println("|")
+    }
+    println(DOTTEDLINE)
+}
+
+// Ask for user input.
+fun makeMove(currentGame: MutableList<String>): List<Int>  {
+    val inputString = readln().split(" ")
+    var validEntry = false
+    when {
+        inputString[0].toIntOrNull() == null || inputString[1].toIntOrNull() == null -> {
+            println("You should enter numbers!")
+        }
+        !(1..3).joinToString("").contains(inputString[0]) || !(1..3).joinToString("").contains(inputString[1]) -> {
+            println("Coordinates should be from 1 to 3!")
+        }
+        currentGame[inputString[0].toInt()-1][inputString[1].toInt()-1] != '_' -> {
+            println("This cell is occupied! Choose another one!")
+        }
+        else -> validEntry = true
+    }
+    if(validEntry) {
+        return listOf<Int>(inputString[0].toInt(), inputString[1].toInt())
+    } else {
+        return listOf<Int>(99, 99)
+    }
+}
+
+fun checkForWins(inputText: MutableList<String>): Boolean{
+    when {
+        checkFor3(inputText, 'X') -> {
+            println("X wins")
+            return true
+        }
+        checkFor3(inputText, 'O') -> {
+            println("O wins")
+            return true
+        }
+        countOccurence(inputText, '_') == 0 && !checkFor3(inputText, 'O') && !checkFor3(inputText, 'X') -> {
+            println("Draw")
+            return true
+        }
+        else -> return false
+    }
+}
+
+// Check for occurences of a Char in a String.
+fun countOccurence(checkL: MutableList<String>, checkChar: Char): Int {
+    var checkStr = checkL.joinToString("")
+    val listStr = checkStr.toCharArray()
+    var counter = 0
+    for (ch in listStr) {
+        when(ch) {
+            checkChar -> counter+=1
+        }
+    }
+    return counter
+}
+
+// Check for if there's a 3-in-a-row situation for the input Char.
+// fun checkFor3(checkStr: String, checkChar: Char): Boolean {
+fun checkFor3(checkL: MutableList<String>, checkChar: Char): Boolean {
+    var checkStr = checkL.joinToString("")
+    for(i in 0..2) {
+        if(checkStr[i] == checkStr[i+3] && checkStr[i+3] == checkStr[i+6] && checkStr[i] == checkChar) {
+            return true
+        }
+    }
+    for(j in 0..8 step 3) {
+        if(checkStr[j] == checkStr[j+1] && checkStr[j+1] == checkStr[j+2] && checkStr[j] == checkChar) {
+            return true
+        }
+    }
+    if((checkStr[0] == checkStr[4] && checkStr[4] == checkStr[8] && checkStr[0] == checkChar) ||
+            (checkStr[2] == checkStr[4] && checkStr[4] == checkStr[6] && checkStr[2] == checkChar)) {
+        return true
+    }
+    return false
+}
